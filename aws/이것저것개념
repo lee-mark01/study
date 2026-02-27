@@ -1,13 +1,15 @@
-vm은 가상머신으로 알고 있어. 뭐야?
+1. vm
+vm은 가상머신
 가상컴퓨터 aws ec2, azure vm, gcp compute engine 같은 거.
 
-1. vm
+2. os
 os는 ec2 생성할 때 선택한다. Ubuntu22.04나 amazon linux 등은 OS 이미지(ami)
 
+3. root 권한
 root 권한: 패키지 설치, 포트 열기, 방화벽 설정, 시스템 파일 수정, 프로세스 죽이기, 유저 생성 가능.
 os 업데이트, 보안설정, nginx 설치, 로그정리, 디스크 꽉차면 해결 등
 
-2. 실행 환경을 통째로 묶는 패키징
+4. 컨테이너
 컨테이너는 os 커널은 공유하고 앱만 격리한다.
 os커널을 공유한다는 게 무슨 말? 앱을 격리한다는 게 무슨 말?
 os란 (os 커널이란) 하드웨어랑 쉘/시스템 라이브러리 사이에서 cpu,메모리 관리, 파일시스템,네트워크, 프로세스 관리
@@ -23,18 +25,18 @@ VM마다 os랑 앱이 있다.
 같은 서버 안에서 node 버전 달라도 충돌 없음
 컨테이너 a가 죽어도 b가 안죽음
 
-3. 그럼 paas랑 docker+vm은 택1인거야?
+5. 그럼 paas랑 docker+vm은 택1인가?
 paas는 추상화된 vm+docker 서비스 -> 보통 이거겠네
 vm 직접 운영하면 vm위에 docker 올림
 
-4. ssh란 원격지에서 셸에 접속하기 위해 사용하는 네트워크 프로토콜
+6. ssh란 원격지에서 셸에 접속하기 위해 사용하는 네트워크 프로토콜
 셸 OS 커널에게 명령 및 실행을 하는 것: 셸 예시: bash, zsh, sh
 ssh 는 네 컴퓨터에서 AWS 서버의 셸에 접속하는 프로토콜
 
 즉 다시 말하면 내 컴퓨터에서 aws 서버에 git pull, npm install, build, pm2 restart 를 ssh 를 접속해서 한다는 거지?
 내 노트북으로 ssh 접속을 하면 ec2 ubuntu 서버 셸로 git pull npm install npm run build pm2 restrat 가능
 
-1) 서버/인프라 준비
+7. 서버/인프라 준비
 
 서버 생성
 
@@ -43,19 +45,19 @@ OS(Ubuntu 등) 근데 보통 ubuntu 22.04 LTS 고른다. 자료 많고 튜토리
 amazon linux는 aws 최적화고 기업 환경에서 자주 사용
 스펙(CPU/RAM) 결정 기준은 상황에 따라.
 
-1. 최소 운영 (최소 운영 (개발/테스트용)
+(1) 최소 운영 (최소 운영 (개발/테스트용)
 t3.micro
 1 vCPU
 1GB RAM
 프리티어 가능
 소규모 테스트용 OK 하지만 트래픽 많으면 위험
 
-2. 실제 사용자 받기 시작하면
+(2) 실제 사용자 받기 시작하면
 t3.small
 2GB RAM
 Node 서버 + Nginx + PM2 정도 가능
 
-네트워크/보안그룹
+8. 네트워크/보안그룹
 22포트는 ssh용도로 내 ip만 오픈
 80포트는 http 용도로 전체 오픈
 443포트는 https 용도로 전체 오픈
@@ -81,30 +83,30 @@ EC2:
 RDS:
 3306 (EC2 보안그룹만 허용)
 
-vpc란 Virtual Private Cloud
+9. vpc란 Virtual Private Cloud
 aws 안에 내 전용 네트워크 공간 만드는 것.
 서브넷, 라우팅 테이블, 인터넷 게이트웨이, 보안그룹
 
-서브넷이란 게 있네. public은 서버가 있고, private subnet은 db가 있네.
+10. 서브넷
+public은 서버가 있고, private subnet은 db가 있네.
 서브넷은 네트워크 구역 나누는 거. 보안 때문에 
 
-UFW 같은 방화벽 설정
+11. UFW 같은 방화벽 설정
 ubuntu firewall: ubuntu OS 안에 있는 방화벽 프로그램
 aws 보안그룹은 네트워크 레벨 방화벽
 ufw는 os 내부 방화벽
 
-시간/로케일/패키지 업데이트
+12. 시간/로케일/패키지 업데이트
 시간대 설정(Asia/Seoul), apt update && upgrade
 
-진짜 서비스면
-
+13. 진짜 서비스면
 ALB
 Auto Scaling
 Docker
 CI/CD
 RDS Multi-AZ
 
-2) 런타임/프로세스 구성
+14. 런타임/프로세스 구성
 
 런타임 설치
 Node 버전 고정(nvm, 또는 docker 이미지로 고정)
@@ -122,7 +124,7 @@ K8s
   └─ Docker
        └─ Node 프로세스
 
-로그 정책
+15. 로그 정책
 stdout/stderr 로그 저장 + 로테이션 설정
 운영에서는 로그가 “디버깅의 생명줄”임
 초기:
@@ -132,19 +134,19 @@ Winston → JSON 로그 → 파일
 실무:
 Winston → Log 서버 (ELK, Loki, Datadog)
 
-3) 환경변수/시크릿 관리
+16. 환경변수/시크릿 관리
 
 환경 분리
 dev/staging/prod 분리 (DB, API 키, 도메인 다름)
 
-시크릿 저장
+17. 시크릿 저장
 .env를 서버에 직접 두거나
 더 좋은 방식: AWS SSM Parameter Store / Vault / Secrets Manager
 
 절대 금지
 .env를 git에 올리기
 
-4) 데이터베이스/스토리지 준비
+18. 데이터베이스/스토리지 준비
 DB 선택/생성
 MySQL/Postgres 등 설치 or 관리형(RDS 등)
 유저 권한 분리
@@ -152,10 +154,10 @@ root 대신 앱 전용 계정(최소 권한)
 마이그레이션
 Prisma/TypeORM/Sequelize migration을 “배포 파이프라인”에 포함
 
-백업
+19. 백업
 정기 백업 + 보관 정책(예: 7일/30일) + 복구 테스트(중요)
 
-5) 웹서버(리버스 프록시) + HTTPS
+20. 웹서버(리버스 프록시) + HTTPS
 
 Nginx(또는 Caddy)
 역할: https://도메인 요청을 내부 앱(예: localhost:3000)으로 전달
@@ -164,7 +166,7 @@ Let’s Encrypt(Certbot)로 무료 발급 + 자동 갱신 설정
 운영 권장 헤더
 HSTS, X-Content-Type-Options 등 기본 보안 헤더
 
-6) 배포(Deploy) 방식 구축
+21. 배포(Deploy) 방식 구축
 A. 가장 단순한 수동 배포
 
 서버에 코드 클론
@@ -178,7 +180,7 @@ GitHub Actions 등으로
 배포 시 자동으로
 마이그레이션 / 헬스체크 / 롤백 준비
 
-7) 운영 필수: 모니터링/알림/관측성
+22. 운영 필수: 모니터링/알림/관측성
 헬스체크 엔드포인트
 /health (DB 연결 여부까지 확인하면 더 좋음)
 메트릭 모니터링
@@ -188,13 +190,13 @@ Prometheus/Grafana 또는 클라우드 모니터링
 최소: 서버 로그 + 앱 로그
 더 발전: ELK/OpenSearch, Grafana Loki
 
-에러 트래킹
+23. 에러 트래킹
 Sentry 같은 걸로 “실시간 예외 + 스택트레이스” 수집
 
-알림
+24. 알림
 장애/에러율 급증/응답시간 증가 시 Slack/Discord/Email 알림
 
-8) 운영 필수: 보안/안정성 세팅
+25. 운영 필수: 보안/안정성 세팅
 
 CORS, Rate Limit
 로그인/회원가입 같은 엔드포인트에 rate limit
@@ -208,7 +210,7 @@ access token 짧게, refresh token 회전/폐기(너가 구현하던 패턴)
 취약점 점검
 npm audit, 이미지 스캔 등
 
-9) 운영 프로세스(실제로 “운용”할 때 루틴)
+26. 운영 프로세스(실제로 “운용”할 때 루틴)
 
 릴리즈 룰
 main 브랜치 보호, PR 리뷰, 버전 태깅
@@ -219,21 +221,11 @@ main 브랜치 보호, PR 리뷰, 버전 태깅
 정기 점검
 디스크 용량, 인증서 갱신 상태, 의존성 업데이트
 
-10) “최소 운영 세트”만 뽑으면 (입문용)
+27. “최소 운영 세트”만 뽑으면 (입문용)
 
 EC2 1대 + 보안그룹(22/80/443)
-
 Node + pm2
-
 Nginx 리버스프록시
-
 Let’s Encrypt SSL
-
 DB는 RDS(가능하면) 또는 서버 내 MySQL
-
 Sentry(에러 트래킹) + 기본 모니터링(CloudWatch/Netdata 등)
-
-자동 백업
-
-원하면 너 지금 하는 스타일(Express + JWT + Joi + Swagger + MySQL) 기준으로,
-“EC2 + Nginx + pm2 + MySQL(RDS)” 조합으로 **진짜 따라할 수 있는 명령어 순서(설치~배포~HTTPS~pm2~로그 확인)**까지 한 번에 적어줄게.
