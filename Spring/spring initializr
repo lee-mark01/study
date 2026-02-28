@@ -1,0 +1,28 @@
+sprint initiallizr
+Project 는 빌드 스크립트를 어떤 DSL로 쓸 것인가?
+build.gradle 문법이 다른 것이다. (Groovy DSL인지, Kotlin DSL인지)
+의존성, 플러그인, 테스크 설정을 적는 언어(DSL)이 다른 것이다.
+
+여기서 잠깐! 의존성, 플러그인, 테스크 설정이 무엇인가?
+의존성이란 내가 사용할 외부 라이브러리이다. 웹서버기능은 sprint-boot-starter-web 같은 거. 만약 implemention 'org.springFramework.boot:spring-boot-starter-web' 이라고 치면 인터넷에서 해당 라이브러리를 자동 다운로드 하고 프로젝트에 자동 연결해준다. 
+
+플러그인이란, Gradle에 기능을 추가하는 확장팩이다. 만약 plugins { id ' org.springFramework.boot'}라고 하면 gradle이 spring boot 실행기능을 추가하고 jar 패키징 방식을 변경하고 bootRun 같은 명령어 생성한다.
+
+태스크란, Gradle이 실행하는 작업단위이다.
+build -> 컴파일, test, bootRun 포함 개념
+compileJava -> 컴파일
+test -> @test
+bootRun -> 스프링부트 서버, 톰캣 서버 열기
+
+그리고 DSL은 무엇인가? DSL은 특정 목적을 위한 언어이다. 즉, 여기서는 위 빌드를 위한 목적으로 사용되는 언어이다.
+
+그리고 컴파일이란, .java 파일을 컴퓨터가 실행가능한 바이트코드(.class)파일로 바꾸는 것을 빌드라고 한다. 그 도구가 Maven이나 Gradle.
+그래서 Gradle을 선택하면 gradlew build 한줄로 컴파일, 라이브러리 다운로드, 테스크 실행, jar 생성까지 자동으로 해준다.
+
+사용할 dependency
+Spring Web → 웹 서버 만들 때 필요
+JPA → DB 저장할 때 필요
+Security → 로그인/인증
+MySQL Driver → DB 연결
+Lombok → 코드 줄이기
+Validation → 입력값 검사
