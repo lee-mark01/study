@@ -1,0 +1,13 @@
+추천 학습 순서:
+
+1. Spring Boot 기본 + Gradle + 레이어 구조
+        ↓
+2. JPA (Entity, Repository) → 현재 DB 스키마 그대로 매핑
+        ↓
+3. Spring Security + JWT → 인증/인가
+        ↓
+4. OAuth2 → 카카오/네이버/구글
+        ↓
+5. Spring Scheduler → Yahoo Finance 연동
+        ↓
+6. Spring WebSocket → 채팅
