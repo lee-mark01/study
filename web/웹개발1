@@ -1,0 +1,116 @@
+웹개발 분할 정복, 1단계 추상화를 이해해보자
+
+목표: 웹개발의 1단계 추상화를 이해한다.
+ 
+프론트엔드 검증 -> axios 나 fetch 요청 -> controller (검증 및 방향) -> service -> repository -> 응답
+
+1. http 요청이 코드에 도착하기까지의 여정
+
+1.1 frontend의 axios 인스턴스와 baseURL /api/v1
+  frontend/src/services/api.ts — Axios 인스턴스 (HTTP 클라이언트)
+
+  const api = axios.create({
+    baseURL: '/api/v1',          // ← 모든 요청 URL 앞에 자동으로 붙음
+    headers: {
+      'Content-Type': 'application/json',  // ← "보내는 데이터는 JSON입니다"
+    },
+  });
+
+axios는 브라우저에서 HTTP 요청을 보내주는 라이브러리.
+fetch로 직접 요청을 보낼 수 있지만, axios가 편리
+이 인스턴스로 요청을 보낸다. 그러면 앞에 baseURL이 자동으로 붙는다.
+그래서 나중에 api.get('/scores/subjects')라고 get 요청을 하면, 실제로는 /api/v1/scores/subjects라고 요청이 간다.
+그리고 Content-Type는 보내는 데이터 타입이 json이라고 서버한테 알려주는 거.
+
+실제 api 호출은 gradeService에서 get 요청을 보내면, baseURL과 합쳐지고 쿼리 파라미터가 붙어서 /api/v1/scores/student/1?year=2025&semester=1
+리턴값은 서버 응답의 json 데이터. return response.data.data;
+
+ gradeService.ts를 보면 4개 메서드가 모두 사용됩니다:
+  - 48줄: api.post('/scores', request) — 성적 등록
+  - 53줄: api.put('/scores/${scoreId}', request) — 성적 수정
+  - 58줄: api.delete('/scores/${scoreId}') — 성적 삭제
+  - 62줄: api.get('/scores/${scoreId}') — 성적 조회
+
+1-2 개발서버프록시: 프론트와 백엔드가 다른 포트인데 어떻게 통신하는가?
+프론트엔드 개발 서버는 http://localhost:5173
+백엔드 개발 서버는 http:localhost:8080
+브라우저에서 localhost:5173에 접속해서 프론트엔드를 보고있는데 api 요청이 localhost:8080으로 가야하는데 cors 보안 정책으로 다른 포트/도메인의 요청은 기본적으로 차단.
+
+vite 프록시
+
+  개발 환경: Vite 프록시 (vite.config.ts:8-12)
+
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8080',
+      changeOrigin: true,
+    },
+  }
+
+브라우저는 localhost:5173/api/v1/score/student/1로 요청하면 
+vite 개발 서버가 URL에서 /api로 시작하면 가로챈 다음 
+http://localhost:8080/api/v1/scores/student/1로 대신 전달한다. (프록시란, 대리인, 중개자라는 의미)
+백엔드 응답을 받아서 브라우저에 돌려줌
+
+근데 프로덕션 환경에서는 vite 개발 서버 대신(vite 서버는 개발용, nginx가 운영용) nginx가 같은 역할을  한다. Nginx 프록시가 이를 대체한다.
+nginx.conf
+  location /api/ {
+      proxy_pass http://backend:8080;
+  }
+/api로 시작하는 요청을 백엔드 컨테이너 backend:8080으로 전달한다.
+또한 그 외 요청들, react가 빌드한 html, css, js 같은 정적 파일을 직접 서빙한다.
+
+  location / {
+      try_files $uri $uri/ /index.html;   # ← SPA 라우팅: 모든 경로를
+  index.html로
+  }
+  이 줄이 중요합니다. React는 **SPA(Single Page Application)**라서, /grades,
+   /students 같은 경로가 실제 파일이 아니라 JavaScript가 처리하는 가상
+  경로입니다. Nginx에게 "파일이 없으면 무조건 index.html을 줘라"고 설정하는
+  겁니다.
+
+3. 백엔드 - Spring 컨트롤러가 요청을 받는 순간
+URL이 java 메서드에 매핑이 되는 법
+
+@RestController
+@RequestMapping("/api/v1/scores") // 이 컨트롤러의 기본 경로는 저 URL이야라는 거 알려줌
+@RequiredArgsConstructor // Lombok이다. 생성자를 자동 생성한다. (객체 생성 안하고. 이를 의존성 주입이라고 한다)
+public class ScoreController {
+    private final ScoreService scoreService;
+}
+이러면 Spring이 자동으로 의존성 (객체)를 주입한다.
+그리고 어노테이션이란 @로 시작하는 것들인데, java에서 이 코드에 부가기능을 붙여줘 라는 의미이다.
+
+@RestController는 이 클래스는 RestAPI 담당이고, 메서드가 리턴하는 객체를 json으로 자동 변환해서 응답해줌
+@RequestMapping("/api/v1/score")는 url이 /api/v1/scores 로 시작하면 이 컨트롤러에 담당시키는 기능.
+
+get 요청 매핑을 보면,
+  @GetMapping("/student/{studentId}")     // ← GET 요청 + "/student/숫자"
+  패턴 매칭
+  public ApiResponse<StudentSemesterScoreResponse> getStudentSemesterScores(
+          @PathVariable Long studentId,         // ← URL의 {studentId} → 1
+          @RequestParam Integer year,           // ← ?year=2025 → 2025
+          @RequestParam Integer semester,       // ← &semester=1 → 1
+          Authentication authentication) {      // ← Spring Security가 자동
+  주입 (현재 로그인 유저)
+
+  매핑 규칙:
+  - 클래스 @RequestMapping("/api/v1/scores") + 메서드
+  @GetMapping("/student/{studentId}") = /api/v1/scores/student/{studentId}
+  - @PathVariable — URL 경로의 일부를 변수로 추출. /student/1에서 1을
+  studentId에 넣음
+  - @RequestParam — 쿼리 파라미터 ?year=2025에서 2025를 year에 넣음
+
+POST 요청(성적 등록)의 경우는 조금 다릅니다:
+
+  @PostMapping                               // ← POST /api/v1/scores
+  @PreAuthorize("hasRole('TEACHER')")        // ← 교사만 호출 가능 (Module
+  3에서 자세히)
+  public ApiResponse<ScoreResponse> createScore(
+          @Valid @RequestBody ScoreRequest request,  // ← HTTP Body의 JSON →
+   Java 객체로 자동 변환
+          Authentication authentication) {
+
+  - @RequestBody — 프론트가 보낸 JSON을 ScoreRequest 객체로 자동 변환합니다
+  - @Valid — 변환된 객체의 유효성 검사를 실행합니다 (Module 4에서 자세히)
+
