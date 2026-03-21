@@ -1,0 +1,1 @@
+배포 시에 ec2 내에 격리된 컨테이너에 backend, nginx(프론트 서빙) 그리고 DB는 RDB.
