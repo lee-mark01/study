@@ -1,0 +1,35 @@
+aws 의 ec2 ubuntu 인스턴스, RDS(DB),
+EC2 내의 웹서버는 Nginx(파일 서빙 및 요청전달)
+
+# EC2
+인스턴스 유형 t2.micro. 다른 건?
+AMI 및 인스턴스 유형 설정 
+키 페어(github actions 설정) 
+네트워크 설정
+스토리지 구성
+보안 그룹 인바운드 규칙 8080 포트 열어주기 규칙?
+EC2 timezone 설정
+
+# docker hub 
+
+# RDS 생성
+Public IPv4 생성 x -> ec2를 통해 RDS 연결할 시 필요x, RDS IP 생성 시 과금
+RDS 파라미터 그룹
+MySQL Workbench와의 연결 (내 로컬 연결)
+
+# 무료 도메인 발급
+
+# docker repository 생성
+yml에 정의된 워크플로우대로, 도커 이미지 빌드 -> docker hub 에서 새로운 도커 이미지를 가져와서 컨테이너 실행.
+
+# Nginx
+Nginx vs Apache vs WAS
+
+# github repository secrets
+
+# dockerfile 작성
+
+# git workflow 작성
+
+## SSL 인증서 cerbot
+
