@@ -46,12 +46,30 @@ class PaymentService{
     }
 }
 ```
-
+위와 같은 상황에서 결제수단이 10개면 if-else 문이 10개가 된다. 새 기능을 추가할 때마다 기존의 잘되던 코드를 건들여야한다.
+따라서 아래와 같이 인터페이스를 통해 확장 가능하게 설계한다.
 ```java
+interface PaymentMethod{
+    void pay(int amount);
+}
 
+class CardPayment implements PaymentMethod{
+    public void pay(int amount){/*카드*/}
+}
+
+class KakaoPayment implemnets PaymemtMethod{
+    public void pay(int amount){/*카카오페이*/}
+}
+
+// 이때 네이버페이를 새로 추가하려면 클래스 하나만 만들면 된다. 수정 대신 확장.
+class NaverPayment implement PaymentMethod{
+    public void pay(int amount){/*네이버페이*/}
+}
 ```
 
 - L - Liskov Substitution Principle (리스코프 치환 원칙): 자식 클래스는 부모 클래스를 대체할 수 있어야한다. Animal 타입 변수에 Dog를 넣어도 프로그램이 정상 동작해야한다. 자식이 부모의 약속(계약)을 깨면 안된다는 원칙)
+이 개념은 신뢰 비용의 문제. 만약 팀원이 Payment를 타입으로 받는 메서드를 팀원이 만든 상황에서,  
+
 - I - Interface Segregation Principle (인터페이스 분리원칙): 클라이언트가 자기가 쓰지 않는 메서드에 의존하면 안된다. 거대한 인터페이스 하나보다, 작고 구체적인 인터페이스 여러개가 낫다. "프린터" 인터페이스에 fax() 메서드가 있으면, 팩스 기능이 없는 프린터는 곤란.
 - D - Dependency Inversion Princlple (의존 역전 원칙): 구체적인 구현이 아니라 추상화(인터페이스)에 의존하라. 리모컨(인터페이스)을 통해 TV를 조작하는 것처럼, 구체적인 TV 모델에 직접 의존하지않으면 나중에 TV 를 바꾸더라도 리모컨은 안바꿔도 된다.
 
