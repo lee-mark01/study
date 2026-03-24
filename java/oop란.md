@@ -19,8 +19,38 @@
 하나의 클래스로 여러 객체를 만들 수 있고, 각 객체는 독립적인 상태를 가진다.
 
 ### 4. 객체 지향의 5원칙(SOLID)이란?
-- S - Single Responsibility Principle (단일 책임 원칙): 클래스는 하나의 책임만 가져야한다. 너무 많은 일을 하면 수정할 이유가 많아져서 위험해진다.
+- S - Single Responsibility Principle (단일 책임 원칙): 클래스는 하나의 책임만 가져야한다. 너무 많은 일을 하면 수정할 이유가 많아져서 위험해진다. 하나의 클래스는 하나의 수정 이유로만 바뀔 수 있도록 짜자. 아래는 안지킨 경우와 지킨 경우의 예시이다.
+```java
+// 안지킨 예시. 이메일 발송을 수정할 때 DB저장에 문제가 생길 수도 있다.
+class UserService{
+    void registerUser(String name); { /*DB저장*/}
+    void sendWelcomEmail(String email); {/*이메일 발송*/}
+    String generateReport(); {/*유저통계리포트*/}
+}
+```
+```java
+class UserSerivice{void register(String name){}};
+class EmailService{void sendWelcome(String email){}};
+class ReportGenerator{ String generate(){}};
+```
+
 - O - Open/Closed Principle (개방-폐쇠 원칙): 확장에는 열려있고, 수정에는 닫혀있어야한다. 새 기능을 추가할 때 기존 코드를 고치지 않고, 새 클래스를 추가하는 방식으로 해결해야한다.
+아래는 코드를 수정하는 예시와 확장하는 예시이다.
+```java
+// 결제 수단을 추가할 때마다 기존 코드를 수정
+class PaymentService{
+    void pay(String type, int amount){
+        if (type.equals("card")){ /*카드결제*/}
+        else if (type.equals("kakao")){/*카카오페이*/}
+        // 네이버페이를 추가하려면 여기를 또 else if로 고쳐야함
+    }
+}
+```
+
+```java
+
+```
+
 - L - Liskov Substitution Principle (리스코프 치환 원칙): 자식 클래스는 부모 클래스를 대체할 수 있어야한다. Animal 타입 변수에 Dog를 넣어도 프로그램이 정상 동작해야한다. 자식이 부모의 약속(계약)을 깨면 안된다는 원칙)
 - I - Interface Segregation Principle (인터페이스 분리원칙): 클라이언트가 자기가 쓰지 않는 메서드에 의존하면 안된다. 거대한 인터페이스 하나보다, 작고 구체적인 인터페이스 여러개가 낫다. "프린터" 인터페이스에 fax() 메서드가 있으면, 팩스 기능이 없는 프린터는 곤란.
 - D - Dependency Inversion Princlple (의존 역전 원칙): 구체적인 구현이 아니라 추상화(인터페이스)에 의존하라. 리모컨(인터페이스)을 통해 TV를 조작하는 것처럼, 구체적인 TV 모델에 직접 의존하지않으면 나중에 TV 를 바꾸더라도 리모컨은 안바꿔도 된다.
