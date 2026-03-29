@@ -1,5 +1,4 @@
 // Lion.java
-package package3;
 
 // 반복해서 생성될 수 있는 정보의 묶음 Lion 클래스
 public class Lion {
